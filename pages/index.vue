@@ -73,7 +73,7 @@ export default {
       }).then(function(response) {
         console.log(response)
         if (!response.data.Sta) {
-          that.$message.info('登录失败：' + response.data.Msg)
+          that.$Message.info('登录失败：' + response.data.Msg)
           return
         }
 

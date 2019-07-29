@@ -49,8 +49,12 @@
                 <Icon type="ios-arrow-down"></Icon>
               </a>
               <DropdownMenu slot="list">
-                <DropdownItem>修改资料</DropdownItem>
-                <DropdownItem divided>登出</DropdownItem>
+                <DropdownItem>
+                  <a @click="change_pass">修改资料</a>
+                </DropdownItem>
+                <DropdownItem divided>
+                  <a @click="log_out">登出</a>
+                </DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
@@ -73,8 +77,6 @@
                 <Icon type="ios-desktop-outline"></Icon>综合控制台
               </template>
               <MenuItem name="1-1" to="home">首页</MenuItem>
-              <MenuItem name="1-2">Option 2</MenuItem>
-              <MenuItem name="1-3">Option 3</MenuItem>
             </Submenu>
             <Submenu name="2">
               <template slot="title">
@@ -104,10 +106,15 @@
             </Submenu>
             <Submenu name="6">
               <template slot="title">
+                <Icon type="ios-clock-outline"></Icon>计划任务
+              </template>
+              <MenuItem name="6-1" to="/cron">计划任务列表</MenuItem>
+            </Submenu>
+            <Submenu name="7">
+              <template slot="title">
                 <Icon type="ios-construct-outline"></Icon>设置
               </template>
-              <MenuItem name="6-1" to="/user">用户设置</MenuItem>
-              <MenuItem name="6-2" to="/setting">通用设置</MenuItem>
+              <MenuItem name="7-1" to="/user">用户设置</MenuItem>
             </Submenu>
           </Menu>
         </Sider>
@@ -118,18 +125,36 @@
         </Layout>
       </Layout>
     </Layout>
+
+    <Modal v-model="modal_pass" width="360">
+      <p slot="header" style="color:#f60;text-align:center">
+        <Icon type="ios-information-circle"></Icon>
+        <span>修改密码</span>
+      </p>
+      <div style="text-align:center">
+        <Input v-model="newpass" placeholder="输入新密码" type="password" />
+      </div>
+      <div slot="footer">
+        <Button type="primary" size="large" long @click="newpass_submit">提交</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
+import { log } from 'util'
+import axios from 'axios'
+import qs from 'qs'
 const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
   data() {
     return {
+      newpass: '',
+      modal_pass: false,
       menuHeight: 100,
       active: '1-1',
       open_t: ['2'],
-      userName:'',
+      userName: ''
     }
   },
   computed: {
@@ -138,7 +163,7 @@ export default {
         return this.open_t
       },
       set() {}
-    },
+    }
   },
   beforeMount: function() {
     this.menuHeight = document.documentElement.clientHeight - 60
@@ -152,6 +177,33 @@ export default {
     },
     open_item: function(name) {
       Cookie.set('open-item', name[0])
+    },
+    change_pass() {
+      this.modal_pass = true
+    },
+    newpass_submit() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/user/repass',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify({
+          pass: this.newpass
+        })
+      }).then(function(response) {
+        // console.log(that)
+        // console.log(response)
+        that.modal_pass = false
+        that.$Message.info('修改成功')
+      })
+    },
+    log_out() {
+      Cookie.remove('PasswordHash')
+      Cookie.remove('isLogin')
+      Cookie.remove('Email')
+      location.href = '/'
     }
   }
 }

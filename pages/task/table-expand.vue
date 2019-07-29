@@ -54,7 +54,11 @@ export default {
 
         let begin = new Date(this.row.TicketAt)
 
-        return (end.getTime()-begin.getTime())/1000
+        let duration = (end.getTime()-begin.getTime())/1000
+        if (duration<0) {
+          return 0
+        }
+        return duration
     },
     deploy_time: function () {
         let end = new Date(this.row.DoneAt)

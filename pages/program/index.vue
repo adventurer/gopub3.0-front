@@ -78,9 +78,9 @@
     </Modal>
 
     <Table border :columns="columns" :data="data"></Table>
-    <Alert>
-        变量提示：
-        <template slot="desc">上线单版本：__version__</template>
+    <Alert style="margin-top:10px;">
+      添加项目时变量提示：
+      <template slot="desc">上线单版本：__version__</template>
     </Alert>
   </div>
 </template>
@@ -93,7 +93,7 @@ import expandRow from './table-expand.vue'
 export default {
   data() {
     return {
-      initStatu:false,
+      initStatu: false,
       projectModel: false,
       hostModel: false,
       formProject: {
@@ -106,8 +106,7 @@ export default {
         CmdEnd: '',
         RepoReal: ''
       },
-      deployStep: [
-      ],
+      deployStep: [],
       formHost: {
         Name: '',
         Project: '',
@@ -159,7 +158,19 @@ export default {
           title: '审核',
           key: 'Audit',
           width: 80,
-          align: 'center'
+          align: 'center',
+          render: (h, params) => {
+            return h('i-switch', {
+              props: {
+                value: !!params.row.Audit
+              },
+              on: {
+                'on-change': () => {
+                  this.change_audit(params.row.ID)
+                }
+              }
+            })
+          }
         },
         {
           title: '部署目录',
@@ -227,7 +238,7 @@ export default {
                   props: {
                     type: 'warning',
                     size: 'small',
-                    loading:this.initStatu
+                    loading: this.initStatu
                   },
                   style: {
                     marginRight: '5px'
@@ -279,7 +290,7 @@ export default {
         data: {
           Name: this.formProject.Name,
           Repo: this.formProject.Repo,
-          Audit:Number(this.formProject.Audit),
+          Audit: Number(this.formProject.Audit),
           Deploy: this.formProject.Deploy,
           DeployName: this.formProject.DeployName,
           RepoReal: this.formProject.RepoReal,
@@ -323,7 +334,7 @@ export default {
     remove(index) {
       this.data6.splice(index, 1)
     },
-    project_init(id){
+    project_init(id) {
       let that = this
       axios({
         method: 'post',
@@ -339,7 +350,21 @@ export default {
         console.log(response.data.Data)
         that.$Message.info(response.data.Msg)
       })
-      
+    },
+    change_audit(id) {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/project/chaudit',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify({
+          id: id
+        })
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
+      })
     }
   }
 }

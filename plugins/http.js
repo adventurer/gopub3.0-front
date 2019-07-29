@@ -27,8 +27,9 @@ export default function({ app }) {
         Cookie.remove('PasswordHash')
         Cookie.remove('isLogin')
         Cookie.remove('Email')
-        app.router.push('/')
-        return
+        response.data.Data = []
+        location.href = '/'
+        return response
       }
       
       return response
