@@ -25,7 +25,6 @@
           <Button
             type="primary"
             :loading="loading"
-            @click="toLoading"
             shape="circle"
             size="large"
             :disabled="deployStatus"

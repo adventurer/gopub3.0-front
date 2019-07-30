@@ -26,19 +26,22 @@
           </template>
         </Select>
       </FormItem>
-      <FormItem label="版本信息">
+      <!-- <FormItem label="版本信息">
         <Input
           v-model="versioninfo"
           type="textarea"
           :autosize="{minRows: 10,maxRows: 40}"
           placeholder="Enter something..."
-        ></Input>
+        ></Input> -->
       </FormItem>
       <FormItem>
         <Button type="primary" @click="task_add">提交上线单</Button>
         <Button style="margin-left: 8px" @click="cancel">Cancel</Button>
       </FormItem>
     </Form>
+    <Card class="version-style">
+      {{versioninfo}}
+    </Card>
   </div>
 </template>
 <style>
@@ -46,6 +49,11 @@
   font-size: 16px;
   font-weight: bold;
   margin-bottom: 10px;
+}
+.version-style{
+  background-color: black;
+  color:white;
+  white-space: pre-wrap;
 }
 </style>
 

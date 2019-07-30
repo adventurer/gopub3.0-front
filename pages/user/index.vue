@@ -32,6 +32,7 @@
 <script>
 import axios from 'axios'
 import qs from 'qs'
+import { log } from 'util';
 const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
@@ -83,11 +84,11 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.show(params.index)
+                      this.user_pass_reset(params.row.ID)
                     }
                   }
                 },
-                '编辑'
+                '重置密码'
               ),
               h(
                 'Button',
@@ -169,9 +170,22 @@ export default {
         })
       }
     },
-    show(index) {
-      this.formItem = this.data6[index]
-      this.modal = true
+    user_pass_reset(id) {
+      let that = this
+      if (confirm('确定要重置该用户？')) {
+        axios({
+          method: 'post',
+          type: 'json',
+          url: '/api/v1/user/reset',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          headers: { token: Cookie.get('PasswordHash') },
+          data: qs.stringify({
+            id: id
+          })
+        }).then(function(response) {
+          that.$Message.info(response.data.Msg)
+        })
+      }
     },
     remove(index) {
       this.data6.splice(index, 1)

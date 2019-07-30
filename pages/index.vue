@@ -13,7 +13,7 @@
           </Input>
         </FormItem>
         <FormItem>
-          <Button type="primary" @click="handleSubmit">Signin</Button>
+          <Button type="primary" @click="handleSubmit">登录</Button>
         </FormItem>
       </Form>
     </Col>

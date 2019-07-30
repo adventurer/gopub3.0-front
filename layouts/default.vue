@@ -203,6 +203,7 @@ export default {
       Cookie.remove('PasswordHash')
       Cookie.remove('isLogin')
       Cookie.remove('Email')
+      Cookie.remove('Role')
       location.href = '/'
     }
   }
