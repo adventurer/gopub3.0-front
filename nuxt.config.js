@@ -51,7 +51,8 @@ export default {
   },
 
   router: {
-    middleware: 'auth'
+    middleware: 'auth',
+    middleware: 'permission',
   },
   server: {
     port: 3000, // default: 3000

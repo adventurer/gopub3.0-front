@@ -80,6 +80,7 @@ export default {
         Cookie.set('PasswordHash', response.data.Data.PasswordHash)
         Cookie.set('isLogin', true)
         Cookie.set('Email', response.data.Data.Email)
+        Cookie.set('Role', response.data.Data.Role)
 
         // that.$router.push('/home')
         location.href = '/home'

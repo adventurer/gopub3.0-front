@@ -76,7 +76,7 @@
               <template slot="title">
                 <Icon type="ios-desktop-outline"></Icon>综合控制台
               </template>
-              <MenuItem name="1-1" to="home">首页</MenuItem>
+              <MenuItem name="1-1" to="/home">首页</MenuItem>
             </Submenu>
             <Submenu name="2">
               <template slot="title">

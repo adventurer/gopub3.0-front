@@ -134,7 +134,21 @@ export default {
         headers: { token: Cookie.get('PasswordHash') },
         data: qs.stringify(this.formItem)
       }).then(function(response) {
-        that.$Message.info('完成添加')
+        that.$Message.info(response.data.Msg)
+        that.modal = false
+      })
+    },
+    user_edit() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/user/add',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify(this.formItem)
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
         that.modal = false
       })
     },
@@ -151,7 +165,7 @@ export default {
             id: id
           })
         }).then(function(response) {
-          that.$Message.info('完成删除')
+          that.$Message.info(response.data.Msg)
         })
       }
     },

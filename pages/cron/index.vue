@@ -38,6 +38,11 @@
     </Modal>
 
     <Table border :columns="columns" :data="data"></Table>
+    <div style="margin:10px;float:right;">
+      <Button type="primary" @click="cron_start">开始</Button>
+      <Button type="primary" @click="cron_stop">停止</Button>
+      <Button type="primary" @click="cron_restart">重启</Button>
+    </div>
   </div>
 </template>
 <script>
@@ -54,7 +59,7 @@ export default {
         Schedule: '',
         Status: '',
         Cmd: '',
-        Machine: '',
+        Machine: ''
       },
       columns: [
         {
@@ -73,8 +78,41 @@ export default {
           width: 200
         },
         {
+          title: '状态',
+          key: 'Status',
+          align: 'center',
+          width: '80px',
+          render: (h, params) => {
+            return h('div', [
+              h('i-switch', {
+                props: {
+                  size: 'small',
+                  value: !!params.row.Status
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  'on-change': status => {
+                    this.cron_switch(params.row.ID, status)
+                  }
+                }
+              })
+            ])
+          }
+        },
+        {
           title: '执行命令',
-          key: 'Cmd'
+          key: 'Cmd',
+          render: (h, params) => {
+            return h('div', [
+              h('Input', {
+                props: {
+                  value:params.row.Cmd,
+                }
+              })
+            ])
+          }
         },
         {
           title: '操作',
@@ -175,6 +213,61 @@ export default {
       }).then(function(response) {
         that.$Message.info(response.data.Msg)
         that.modal = false
+      })
+    },
+    cron_start() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/cron/start',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') }
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
+      })
+    },
+    cron_stop() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/cron/stop',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') }
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
+      })
+    },
+    cron_restart() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/cron/restart',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') }
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
+      })
+    },
+    cron_switch(id, status) {
+      let url = ''
+      if (status) {
+        url = '/api/v1/cron/on'
+      } else {
+        url = '/api/v1/cron/off'
+      }
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: url,
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify({ id: id })
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
       })
     }
   }

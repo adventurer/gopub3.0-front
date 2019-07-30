@@ -39,6 +39,7 @@
 <script>
 import axios from 'axios'
 import qs from 'qs'
+import { parse } from 'path'
 const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
@@ -50,7 +51,7 @@ export default {
         name: '',
         ip: '',
         port: '',
-        auto: '',
+        auto: ''
       },
       columns1: [
         {
@@ -71,7 +72,26 @@ export default {
         },
         {
           title: '自动连接',
-          key: 'Auto'
+          key: 'Auto',
+          render: (h, params) => {
+            return h('div', [
+              h('i-switch', {
+                props: {
+                  size: 'small',
+                  value: !!params.row.Auto
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  'on-change': status => {
+                    console.log(params.row)
+                    this.service_switch(params.row.Name, status)
+                  }
+                }
+              })
+            ])
+          }
         },
         {
           title: '连接',
@@ -80,24 +100,26 @@ export default {
           width: '80px',
           render: (h, params) => {
             return h('div', [
-              h(
-                'i-switch',
-                {
-                  props: {
-                    size: 'small',
-                    value: this.data1[params.index].Status
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    'on-change': (status) => {
-                      this.data1[params.index].Status = !this.data1[params.index].Status
-                      this.proxy_switch(this.data1[params.index].Machine,this.data1[params.index].Name,this.data1[params.index].Status)
-                    }
+              h('i-switch', {
+                props: {
+                  size: 'small',
+                  value: this.data1[params.index].Status
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  'on-change': status => {
+                    this.data1[params.index].Status = !this.data1[params.index]
+                      .Status
+                    this.proxy_switch(
+                      this.data1[params.index].Machine,
+                      this.data1[params.index].Name,
+                      this.data1[params.index].Status
+                    )
                   }
                 }
-              )
+              })
             ])
           }
         }
@@ -114,10 +136,7 @@ export default {
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       headers: { token: Cookie.get('PasswordHash') }
     }).then(function(response) {
-      console.log(that.data1)
-      console.log(response.data.Data)
       that.data1 = response.data.Data
-      // that.data6 = response.data.Data
     })
   },
   methods: {
@@ -142,7 +161,7 @@ export default {
         that.$Message.info('新增成功')
       })
     },
-    proxy_switch(name,service,status) {
+    proxy_switch(name, service, status) {
       console.log(name)
       console.log(service)
       let that = this
@@ -155,7 +174,7 @@ export default {
           headers: { token: Cookie.get('PasswordHash') },
           data: qs.stringify({
             name: name,
-            service:service
+            service: service
           })
         }).then(function(response) {
           // console.log(that)
@@ -170,13 +189,45 @@ export default {
           headers: { token: Cookie.get('PasswordHash') },
           data: qs.stringify({
             name: name,
-            service:service
+            service: service
           })
         }).then(function(response) {
           // console.log(that)
           console.log(response)
         })
       }
+    },
+    service_switch(name, status) {
+      let url = ''
+      if (status) {
+        url = '/api/v1/service/on'
+      } else {
+        url = '/api/v1/service/off'
+      }
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: url,
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify({ name: name })
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
+        that.sync()
+      })
+    },
+    sync() {
+      let that = this
+      axios({
+        method: 'get',
+        type: 'json',
+        url: '/api/v1/service/list',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') }
+      }).then(function(response) {
+        that.data1 = response.data.Data
+      })
     }
   }
 }
