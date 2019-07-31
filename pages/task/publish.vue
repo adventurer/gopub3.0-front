@@ -53,7 +53,9 @@ export default {
       taskInfo: []
     }
   },
-  mounted: function() {},
+  mounted: function() {
+    console.log(this.$route.path)
+  },
   beforeMount: function() {
     this.taskId = this.$route.query.id
     this.initTask()
@@ -106,22 +108,24 @@ export default {
     fresh_task_info() {
       let that = this
       setInterval(() => {
-        axios({
-          method: 'post',
-          type: 'json',
-          url: '/api/v1/task/deploymessage',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          headers: { token: Cookie.get('PasswordHash') },
-          data: qs.stringify({
-            id: this.taskId
+        if (this.$route.path == '/task/publish') {
+          axios({
+            method: 'post',
+            type: 'json',
+            url: '/api/v1/task/deploymessage',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            headers: { token: Cookie.get('PasswordHash') },
+            data: qs.stringify({
+              id: this.taskId
+            })
+          }).then(function(response) {
+            if (response.data.Code == 1) {
+              console.log(response.data.Data)
+              console.log(that.taskInfo)
+              that.taskInfo = response.data.Data
+            }
           })
-        }).then(function(response) {
-          if (response.data.Code == 1) {
-            console.log(response.data.Data)
-            console.log(that.taskInfo)
-            that.taskInfo = response.data.Data
-          }
-        })
+        }
       }, 1000)
     }
   }

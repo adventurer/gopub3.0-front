@@ -96,7 +96,6 @@
                 <Icon type="ios-cloud-outline"></Icon>主机
               </template>
               <MenuItem name="4-1" to="/machine">主机列表</MenuItem>
-              <MenuItem name="4-2">主机监控</MenuItem>
             </Submenu>
             <Submenu name="5">
               <template slot="title">
