@@ -35,6 +35,21 @@
           </FormItem>
           <p>上线步骤</p>
           <Divider />
+          <Button
+            style="margin:10px"
+            icon="ios-add"
+            type="primary"
+            shape="circle"
+            @click="add_step"
+          ></Button>
+          <Button
+            style="margin:10px"
+            icon="ios-remove"
+            type="primary"
+            shape="circle"
+            @click="remove_step"
+          ></Button>
+
           <template v-for="item,index in deployStep">
             <FormItem :label="'步骤：'+index">
               <Input v-model="deployStep[index].Title" width="200px">
@@ -45,8 +60,6 @@
               </Input>
             </FormItem>
           </template>
-
-          <Button icon="ios-add" type="primary" shape="circle" @click="add_step"></Button>
         </Form>
       </div>
       <div slot="footer">
@@ -208,7 +221,7 @@ export default {
         {
           title: '操作',
           key: 'action',
-          width: 200,
+          width: 300,
           align: 'center',
           render: (h, params) => {
             return h('div', [
@@ -236,6 +249,28 @@ export default {
                 'Button',
                 {
                   props: {
+                    type: 'primary',
+                    size: 'small',
+                    loading: this.initStatu
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.$router.push({
+                        path: '/program/estep',
+                        query: { id: params.row.ID }
+                      })
+                    }
+                  }
+                },
+                '编辑步骤'
+              ),
+              h(
+                'Button',
+                {
+                  props: {
                     type: 'warning',
                     size: 'small',
                     loading: this.initStatu
@@ -251,6 +286,25 @@ export default {
                   }
                 },
                 '初始化'
+              ),
+              h(
+                'Button',
+                {
+                  props: {
+                    type: 'error',
+                    size: 'small',
+                    loading: this.initStatu
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.remove_project(params.row)
+                    }
+                  }
+                },
+                '删除'
               )
             ])
           }
@@ -298,7 +352,7 @@ export default {
         }
       }).then(function(response) {
         console.log(response.data.Data)
-        that.$Message.info('新增成功')
+        that.$Message.info(response.data.Msg)
         that.projectModel = false
       })
     },
@@ -324,6 +378,10 @@ export default {
     add_step() {
       console.log(this.deployStep)
       this.deployStep.push({ Title: '', Action: '' })
+    },
+    remove_step() {
+      console.log(this.deployStep)
+      this.deployStep.pop()
     },
     show(index) {
       this.$Modal.info({
@@ -365,6 +423,23 @@ export default {
       }).then(function(response) {
         that.$Message.info(response.data.Msg)
       })
+    },
+    remove_project(data) {
+      if (confirm('确认要删除项目:' + data.Name + '?')) {
+        let that = this
+        axios({
+          method: 'post',
+          type: 'json',
+          url: '/api/v1/project/remove',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          headers: { token: Cookie.get('PasswordHash') },
+          data: qs.stringify({
+            ID: data.ID
+          })
+        }).then(function(response) {
+          that.$Message.info(response.data.Msg)
+        })
+      }
     }
   }
 }

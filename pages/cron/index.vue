@@ -36,6 +36,40 @@
         <Button type="success" size="large" long @click="cron_add">新增</Button>
       </div>
     </Modal>
+    <!-- 编辑任务 -->
+    <Modal v-model="modalEdit" width="800">
+      <p slot="header" style="color:#f60;text-align:center">
+        <Icon type="ios-information-circle"></Icon>
+        <span>编辑任务</span>
+      </p>
+      <div style="text-align:center">
+        <Form :model="formItemEdit" :label-width="60">
+          <FormItem label="任务名">
+            <Input v-model="formItemEdit.Name" placeholder="一个名字而已"></Input>
+          </FormItem>
+          <FormItem label="计划时间">
+            <Input v-model="formItemEdit.Schedule" placeholder="秒 分 时 日 月 年"></Input>
+          </FormItem>
+          <FormItem label="是否启用">
+            <Input v-model="formItemEdit.Status" placeholder="1/0"></Input>
+          </FormItem>
+          <FormItem label="执行主机">
+            <Input v-model="formItemEdit.Machine" placeholder="主机别名"></Input>
+          </FormItem>
+          <FormItem label="执行命令">
+            <Input
+              v-model="formItemEdit.Cmd"
+              type="textarea"
+              :autosize="{minRows: 20,maxRows: 50}"
+              placeholder="shell命令内容"
+            ></Input>
+          </FormItem>
+        </Form>
+      </div>
+      <div slot="footer">
+        <Button type="success" size="large" long @click="cron_edit_submit">提交修改</Button>
+      </div>
+    </Modal>
 
     <Table border :columns="columns" :data="data"></Table>
     <div style="margin:10px;float:right;">
@@ -54,7 +88,15 @@ export default {
   data() {
     return {
       modal: false,
+      modalEdit: false,
       formItem: {
+        Name: '',
+        Schedule: '',
+        Status: '',
+        Cmd: '',
+        Machine: ''
+      },
+      formItemEdit: {
         Name: '',
         Schedule: '',
         Status: '',
@@ -108,7 +150,7 @@ export default {
             return h('div', [
               h('Input', {
                 props: {
-                  value:params.row.Cmd,
+                  value: params.row.Cmd
                 }
               })
             ])
@@ -133,7 +175,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.show(params.index)
+                      this.$Message.info("好麻烦，这个先不做")
                     }
                   }
                 },
@@ -151,7 +193,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.show(params.index)
+                      this.cron_edit(params.row)
                     }
                   }
                 },
@@ -166,7 +208,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.remove(params.index)
+                      this.cron_remove(params.row.ID)
                     }
                   }
                 },
@@ -268,6 +310,46 @@ export default {
         data: qs.stringify({ id: id })
       }).then(function(response) {
         that.$Message.info(response.data.Msg)
+      })
+    },
+    cron_remove(id) {
+      if (confirm('确认删除此任务？')) {
+        let that = this
+        axios({
+          method: 'post',
+          type: 'json',
+          url: '/api/v1/cron/remove',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          headers: { token: Cookie.get('PasswordHash') },
+          data: qs.stringify({ id: id })
+        }).then(function(response) {
+          that.$Message.info(response.data.Msg)
+        })
+      }
+    },
+    cron_edit(data) {
+      this.formItemEdit = data
+      this.modalEdit = true
+    },
+    cron_edit_submit() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/cron/edit',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify({
+          ID:this.formItemEdit.ID,
+          Name: this.formItemEdit.Name,
+          Schedule: this.formItemEdit.Schedule,
+          Status: this.formItemEdit.Status,
+          Cmd: this.formItemEdit.Cmd,
+          Machine: this.formItemEdit.Machine
+        })
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
+        that.modalEdit = false
       })
     }
   }

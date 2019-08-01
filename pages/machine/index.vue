@@ -150,30 +150,12 @@ export default {
                 'Button',
                 {
                   props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      this.show(params.index)
-                    }
-                  }
-                },
-                '编辑'
-              ),
-              h(
-                'Button',
-                {
-                  props: {
                     type: 'error',
                     size: 'small'
                   },
                   on: {
                     click: () => {
-                      this.remove(params.index)
+                      this.machine_remove(params.row.ID)
                     }
                   }
                 },
@@ -267,6 +249,21 @@ export default {
         that.modal2 = false
         that.$Message.info('新增成功')
       })
+    },
+    machine_remove(id) {
+      if (confirm('确认要删除这台主机')) {
+        let that = this
+        axios({
+          method: 'post',
+          type: 'json',
+          url: '/api/v1/machine/remove',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          headers: { token: Cookie.get('PasswordHash') },
+          data: qs.stringify({id:id})
+        }).then(function(response) {
+          that.$Message.info(response.data.Msg)
+        })
+      }
     }
   }
 }
