@@ -111,9 +111,15 @@
             </Submenu>
             <Submenu name="7">
               <template slot="title">
+                <Icon type="ios-cube-outline"></Icon>容器
+              </template>
+              <MenuItem name="7-1" to="/docker">容器列表</MenuItem>
+            </Submenu>
+            <Submenu name="8">
+              <template slot="title">
                 <Icon type="ios-construct-outline"></Icon>设置
               </template>
-              <MenuItem name="7-1" to="/user">用户设置</MenuItem>
+              <MenuItem name="8-1" to="/user">用户设置</MenuItem>
             </Submenu>
           </Menu>
         </Sider>

@@ -16,6 +16,9 @@
           <FormItem label="用户名">
             <Input v-model="formItem.user" placeholder="Enter something..."></Input>
           </FormItem>
+          <FormItem label="主机类型">
+            <Input v-model="formItem.type" placeholder="number"></Input>
+          </FormItem>
           <FormItem label="IP">
             <Input v-model="formItem.ip" placeholder="Enter something..."></Input>
           </FormItem>
@@ -55,7 +58,8 @@ export default {
         port: '',
         rsa: '',
         user: '',
-        textarea: ''
+        textarea: '',
+        type: '',
       },
       columns7: [
         {
@@ -77,6 +81,12 @@ export default {
         {
           title: '别名',
           key: 'Name'
+        },
+        {
+          title: '类型',
+          key: 'Type',
+          align: 'center',
+          width:80,
         },
         {
           title: '用户',
@@ -241,7 +251,8 @@ export default {
           Ip: this.formItem.ip,
           Port: this.formItem.port,
           Rsa: this.formItem.rsa,
-          User: this.formItem.user
+          User: this.formItem.user,
+          Type: this.formItem.type,
         })
       }).then(function(response) {
         // console.log(that)
