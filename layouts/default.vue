@@ -99,7 +99,7 @@
             </Submenu>
             <Submenu name="5">
               <template slot="title">
-                <Icon type="logo-github"></Icon>内网服务穿透
+                <Icon type="logo-github"></Icon>内外网服务穿透
               </template>
               <MenuItem name="5-1" to="/service">服务穿透列表</MenuItem>
             </Submenu>
@@ -113,7 +113,9 @@
               <template slot="title">
                 <Icon type="ios-cube-outline"></Icon>容器
               </template>
-              <MenuItem name="7-1" to="/docker">容器列表</MenuItem>
+              <MenuItem name="7-1" to="/docker/network">网络</MenuItem>
+              <MenuItem name="7-2" to="/docker">容器列表</MenuItem>
+              <MenuItem name="7-3" to="/docker/port">端口转发</MenuItem>
             </Submenu>
             <Submenu name="8">
               <template slot="title">

@@ -1,7 +1,7 @@
 <template>
   <div>
     <Select
-      @on-change="get_containers"
+      @on-change="get_network"
       v-model="model1"
       style="width:200px;margin-bottom:5px;"
       placeholder="选择主机"
@@ -10,6 +10,32 @@
     </Select>
 
     <Table border :columns="columns" :data="data"></Table>
+
+    <Modal v-model="modal2" width="400">
+      <p slot="header" style="color:#f60;text-align:center">
+        <Icon type="ios-information-circle"></Icon>
+        <span>创建容器@{{model1}}</span>
+      </p>
+      <div style="text-align:center">
+        <Form :model="formItem" :label-width="60">
+          <FormItem label="容器名称">
+            <Input v-model="formItem.Name" placeholder="容器名"></Input>
+          </FormItem>
+          <FormItem label="网络">
+            <Input v-model="formItem.Network" placeholder="网络自动指定" disabled></Input>
+          </FormItem>
+          <FormItem label="ip">
+            <Input v-model="formItem.Ip" placeholder="容器ip"></Input>
+          </FormItem>
+          <FormItem label="镜像">
+            <Input v-model="formItem.Image" placeholder="容器镜像"></Input>
+          </FormItem>
+        </Form>
+      </div>
+      <div slot="footer">
+        <Button type="success" size="large" @click="container_deploy">新增</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -20,6 +46,14 @@ const Cookie = process.client ? require('js-cookie') : undefined
 export default {
   data() {
     return {
+      modal2: false,
+      formItem: {
+        Machine:this.model1,
+        Name: '',
+        Network: '',
+        Ip: '',
+        Image: ''
+      },
       columns: [
         {
           title: 'ID',
@@ -36,28 +70,46 @@ export default {
           }
         },
         {
-          title: 'Name',
+          title: 'NAME',
           key: 'Name'
         },
         {
-          title: 'IP',
+          title: 'NETWORK',
           key: 'IP'
         },
         {
-          title: '开放端口',
-          key: 'Ports'
+          title: 'DRIVER',
+          key: 'Driver'
         },
         {
-          title: '状态',
-          key: 'Status'
+          title: 'SCOPE',
+          key: 'Scope'
         },
         {
           title: '操作',
           key: 'action',
-          width: 240,
+          width: 250,
           align: 'center',
           render: (h, params) => {
             return h('div', [
+              h(
+                'Button',
+                {
+                  props: {
+                    type: 'primary',
+                    size: 'small'
+                  },
+                  style: {
+                    marginRight: '5px'
+                  },
+                  on: {
+                    click: () => {
+                      this.container_new(params.row)
+                    }
+                  }
+                },
+                '创建容器'
+              ),
               h(
                 'Button',
                 {
@@ -80,38 +132,16 @@ export default {
                 'Button',
                 {
                   props: {
-                    type: 'primary',
+                    type: 'error',
                     size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: event => {
-                      console.log(event)
-                      this.start_container(params.row)
-                    }
-                  }
-                },
-                '启动'
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
                   },
                   on: {
                     click: () => {
-                      this.stop_container(params.row)
+                      this.remove(params.index)
                     }
                   }
                 },
-                '停止'
+                '删除'
               )
             ])
           }
@@ -146,58 +176,38 @@ export default {
     remove(index) {
       this.data6.splice(index, 1)
     },
-    start_container(row) {
+    get_network() {
       let that = this
       axios({
         method: 'post',
         type: 'json',
-        url: '/api/v1/docker/start',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        headers: { token: Cookie.get('PasswordHash') },
-        data: qs.stringify({
-          id: row.ID
-        })
-      }).then(function(response) {
-        if (response.data.Sta == 1) {
-          that.$Message.info(response.data.Msg)
-        }
-      })
-    },
-    stop_container(row) {
-      let that = this
-      axios({
-        method: 'post',
-        type: 'json',
-        url: '/api/v1/docker/stop',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        headers: { token: Cookie.get('PasswordHash') },
-        data: qs.stringify({
-          id: row.ID
-        })
-      }).then(function(response) {
-        if (response.data.Sta == 1) {
-          that.$Message.info(response.data.Msg)
-        }
-      })
-    },
-    get_containers() {
-      let that = this
-      axios({
-        method: 'post',
-        type: 'json',
-        url: '/api/v1/docker/list',
+        url: '/api/v1/docker/networks',
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         headers: { token: Cookie.get('PasswordHash') },
         data: qs.stringify({
           id: this.model1
         })
       }).then(function(response) {
-        if (response.data.Sta == 1) {
-          that.data = response.data.Data
-          that.$Message.info(response.data.Msg)
-        } else {
-          that.data = []
-        }
+        that.formItem.Machine = that.model1
+        that.$Message.info(response.data.Msg)
+        that.data = response.data.Data
+      })
+    },
+    container_new(row) {
+      this.modal2 = true
+      this.formItem.Network = row.Name
+    },
+    container_deploy() {
+      let that = this
+      axios({
+        method: 'post',
+        type: 'json',
+        url: '/api/v1/docker/container/deploy',
+        headers: { 'content-type': 'application/x-www-form-urlencoded' },
+        headers: { token: Cookie.get('PasswordHash') },
+        data: qs.stringify(this.formItem)
+      }).then(function(response) {
+        that.$Message.info(response.data.Msg)
       })
     }
   }
