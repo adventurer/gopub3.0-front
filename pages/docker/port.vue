@@ -13,11 +13,14 @@
           <FormItem label="容器名称">
             <Input v-model="formItem.Name" placeholder="Enter something..."></Input>
           </FormItem>
+          <FormItem label="宿主主机">
+            <Input v-model="formItem.MachineName" placeholder="Enter something..."></Input>
+          </FormItem>
           <FormItem label="宿主端口">
             <Input v-model="formItem.Port" placeholder="Enter something..."></Input>
           </FormItem>
           <FormItem label="转发到ip">
-            <Input v-model="formItem.Ip" placeholder="Enter something..."></Input>
+            <Input v-model="formItem.ToIp" placeholder="Enter something..."></Input>
           </FormItem>
           <FormItem label="转发到端口">
             <Input v-model="formItem.ToPort" placeholder="number"></Input>
@@ -47,15 +50,25 @@ export default {
       modal:false,
       formItem: {
         Name: '',
+        MachineName: '',
         Port: '',
-        Ip: '',
+        ToIp: '',
         ToPort: '',
         Status: '',
       },
       columns: [
         {
+          title: '#',
+          key: 'ID',
+          width: 60,
+        },
+        {
           title: '容器名称',
           key: 'Name'
+        },
+        {
+          title: '宿主主机',
+          key: 'MachineName'
         },
         {
           title: '宿主端口',
@@ -63,7 +76,7 @@ export default {
         },
         {
           title: '转发IP',
-          key: 'Ip'
+          key: 'ToIp'
         },
         {
           title: '转发端口',
@@ -74,7 +87,7 @@ export default {
           key: 'Status'
         },
         {
-          title: 'Action',
+          title: '操作',
           key: 'action',
           width: 150,
           align: 'center',
@@ -107,7 +120,7 @@ export default {
                   },
                   on: {
                     click: () => {
-                      this.remove(params.index)
+                      this.remove_port(params.row.ID)
                     }
                   }
                 },
@@ -158,6 +171,23 @@ export default {
         that.$Message.info(response.data.Msg)
         that.modal = false
       })
+    },
+    remove_port(id){
+      let that = this      
+      if (confirm("确认要删除？")) {
+        axios({
+          method: 'post',
+          type: 'json',
+          url: '/api/v1/docker/removeport',
+          headers: { 'content-type': 'application/x-www-form-urlencoded' },
+          headers: { token: Cookie.get('PasswordHash') },
+          data: qs.stringify({
+            id:id
+          })
+        }).then(function(response) {
+          that.$Message.info(response.data.Msg)
+        })
+      }
     }
   }
 }
