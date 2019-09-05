@@ -119,9 +119,16 @@
             </Submenu>
             <Submenu name="8">
               <template slot="title">
+                <Icon type="ios-at-outline"></Icon>域名
+              </template>
+              <MenuItem name="8-1" to="/domain/setting">域名配置</MenuItem>
+              <MenuItem name="8-2" to="/domain">域名列表</MenuItem>
+            </Submenu>
+            <Submenu name="9">
+              <template slot="title">
                 <Icon type="ios-construct-outline"></Icon>设置
               </template>
-              <MenuItem name="8-1" to="/user">用户设置</MenuItem>
+              <MenuItem name="9-1" to="/user">用户设置</MenuItem>
             </Submenu>
           </Menu>
         </Sider>

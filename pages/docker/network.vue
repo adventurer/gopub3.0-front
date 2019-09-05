@@ -36,6 +36,11 @@
         <Button type="success" size="large" @click="container_deploy">新增</Button>
       </div>
     </Modal>
+
+    <Alert style="margin-top:10px;">
+        创建网络示例：
+        <template slot="desc">docker  network  create  -d  bridge  --subnet  172.19.0.0/24 wnetwork</template>
+    </Alert>
   </div>
 </template>
 <script>
@@ -44,172 +49,176 @@ import qs from 'qs'
 const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
-  data() {
-    return {
-      modal2: false,
-      formItem: {
-        Machine:this.model1,
-        Name: '',
-        Network: '',
-        Ip: '',
-        Image: ''
-      },
-      columns: [
-        {
-          title: 'ID',
-          key: 'ID',
-          render: (h, params) => {
-            return h('div', [
-              h('Icon', {
-                props: {
-                  type: 'person'
+    data() {
+        return {
+            modal2: false,
+            formItem: {
+                Machine: this.model1,
+                Name: '',
+                Network: '',
+                Ip: '',
+                Image: ''
+            },
+            columns: [
+                {
+                    title: 'ID',
+                    key: 'ID',
+                    render: (h, params) => {
+                        return h('div', [
+                            h('Icon', {
+                                props: {
+                                    type: 'person'
+                                }
+                            }),
+                            h('strong', params.row.ID)
+                        ])
+                    }
+                },
+                {
+                    title: 'NAME',
+                    key: 'Name'
+                },
+                {
+                    title: 'NETWORK',
+                    key: 'IP'
+                },
+                {
+                    title: 'DRIVER',
+                    key: 'Driver'
+                },
+                {
+                    title: 'SCOPE',
+                    key: 'Scope'
+                },
+                {
+                    title: '操作',
+                    key: 'action',
+                    width: 250,
+                    align: 'center',
+                    render: (h, params) => {
+                        return h('div', [
+                            h(
+                                'Button',
+                                {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.container_new(params.row)
+                                        }
+                                    }
+                                },
+                                '创建容器'
+                            ),
+                            h(
+                                'Button',
+                                {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.show(params.index)
+                                        }
+                                    }
+                                },
+                                '详情'
+                            ),
+                            h(
+                                'Button',
+                                {
+                                    props: {
+                                        type: 'error',
+                                        size: 'small'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.remove(params.index)
+                                        }
+                                    }
+                                },
+                                '删除'
+                            )
+                        ])
+                    }
                 }
-              }),
-              h('strong', params.row.ID)
-            ])
-          }
-        },
-        {
-          title: 'NAME',
-          key: 'Name'
-        },
-        {
-          title: 'NETWORK',
-          key: 'IP'
-        },
-        {
-          title: 'DRIVER',
-          key: 'Driver'
-        },
-        {
-          title: 'SCOPE',
-          key: 'Scope'
-        },
-        {
-          title: '操作',
-          key: 'action',
-          width: 250,
-          align: 'center',
-          render: (h, params) => {
-            return h('div', [
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      this.container_new(params.row)
-                    }
-                  }
-                },
-                '创建容器'
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      this.show(params.index)
-                    }
-                  }
-                },
-                '详情'
-              ),
-              h(
-                'Button',
-                {
-                  props: {
-                    type: 'error',
-                    size: 'small'
-                  },
-                  on: {
-                    click: () => {
-                      this.remove(params.index)
-                    }
-                  }
-                },
-                '删除'
-              )
-            ])
-          }
+            ],
+            data: [],
+            machines: [],
+            model1: []
         }
-      ],
-      data: [],
-      machines: [],
-      model1: []
-    }
-  },
-  mounted: function() {
-    let that = this
-    axios({
-      method: 'get',
-      type: 'json',
-      url: '/api/v1/docker/machines',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      headers: { token: Cookie.get('PasswordHash') }
-    }).then(function(response) {
-      if (!!response.data.Data) {
-        that.machines = response.data.Data
-      }
-    })
-  },
-  methods: {
-    show(index) {
-      this.$Modal.info({
-        title: 'User Info',
-        content: `Name：${this.data6[index].name}<br>Age：${this.data6[index].age}<br>Address：${this.data6[index].address}`
-      })
     },
-    remove(index) {
-      this.data6.splice(index, 1)
-    },
-    get_network() {
-      let that = this
-      axios({
-        method: 'post',
-        type: 'json',
-        url: '/api/v1/docker/networks',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        headers: { token: Cookie.get('PasswordHash') },
-        data: qs.stringify({
-          id: this.model1
+    mounted: function() {
+        let that = this
+        axios({
+            method: 'get',
+            type: 'json',
+            url: '/api/v1/docker/machines',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            headers: { token: Cookie.get('PasswordHash') }
+        }).then(function(response) {
+            if (!!response.data.Data) {
+                that.machines = response.data.Data
+            }
         })
-      }).then(function(response) {
-        that.formItem.Machine = that.model1
-        that.$Message.info(response.data.Msg)
-        that.data = response.data.Data
-      })
     },
-    container_new(row) {
-      this.modal2 = true
-      this.formItem.Network = row.Name
-    },
-    container_deploy() {
-      let that = this
-      axios({
-        method: 'post',
-        type: 'json',
-        url: '/api/v1/docker/container/deploy',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        headers: { token: Cookie.get('PasswordHash') },
-        data: qs.stringify(this.formItem)
-      }).then(function(response) {
-        that.$Message.info(response.data.Msg)
-      })
+    methods: {
+        show(index) {
+            this.$Modal.info({
+                title: 'User Info',
+                content: `Name：${this.data6[index].name}<br>Age：${this.data6[index].age}<br>Address：${this.data6[index].address}`
+            })
+        },
+        remove(index) {
+            this.data6.splice(index, 1)
+        },
+        get_network() {
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/networks',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify({
+                    id: this.model1
+                })
+            }).then(function(response) {
+                that.formItem.Machine = that.model1
+                that.$Message.info(response.data.Msg)
+                that.data = response.data.Data
+            })
+        },
+        container_new(row) {
+            this.modal2 = true
+            this.formItem.Network = row.Name
+        },
+        container_deploy() {
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/container/deploy',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify(this.formItem)
+            }).then(function(response) {
+                that.$Message.info(response.data.Msg)
+            })
+        }
     }
-  }
 }
 </script>

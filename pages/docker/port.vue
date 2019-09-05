@@ -28,7 +28,6 @@
           <FormItem label="状态">
             <Input v-model="formItem.Status" placeholder="Enter something..."></Input>
           </FormItem>
-          </FormItem>
         </Form>
       </div>
       <div slot="footer">
@@ -45,150 +44,137 @@ import qs from 'qs'
 const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
-  data() {
-    return {
-      modal:false,
-      formItem: {
-        Name: '',
-        MachineName: '',
-        Port: '',
-        ToIp: '',
-        ToPort: '',
-        Status: '',
-      },
-      columns: [
-        {
-          title: '#',
-          key: 'ID',
-          width: 60,
-        },
-        {
-          title: '容器名称',
-          key: 'Name'
-        },
-        {
-          title: '宿主主机',
-          key: 'MachineName'
-        },
-        {
-          title: '宿主端口',
-          key: 'Port'
-        },
-        {
-          title: '转发IP',
-          key: 'ToIp'
-        },
-        {
-          title: '转发端口',
-          key: 'ToPort'
-        },
-        {
-          title: '状态',
-          key: 'Status'
-        },
-        {
-          title: '操作',
-          key: 'action',
-          width: 150,
-          align: 'center',
-          render: (h, params) => {
-            return h('div', [
-              h(
-                'Button',
+    data() {
+        return {
+            modal: false,
+            formItem: {
+                Name: '',
+                MachineName: '',
+                Port: '',
+                ToIp: '',
+                ToPort: '',
+                Status: ''
+            },
+            columns: [
                 {
-                  props: {
-                    type: 'primary',
-                    size: 'small'
-                  },
-                  style: {
-                    marginRight: '5px'
-                  },
-                  on: {
-                    click: () => {
-                      this.show(params.index)
-                    }
-                  }
+                    title: '#',
+                    key: 'ID',
+                    width: 60
                 },
-                'View'
-              ),
-              h(
-                'Button',
                 {
-                  props: {
-                    type: 'error',
-                    size: 'small'
-                  },
-                  on: {
-                    click: () => {
-                      this.remove_port(params.row.ID)
-                    }
-                  }
+                    title: '容器名称',
+                    key: 'Name'
                 },
-                'Delete'
-              )
-            ])
-          }
+                {
+                    title: '宿主主机',
+                    key: 'MachineName'
+                },
+                {
+                    title: '宿主端口',
+                    key: 'Port'
+                },
+                {
+                    title: '转发IP',
+                    key: 'ToIp'
+                },
+                {
+                    title: '转发端口',
+                    key: 'ToPort'
+                },
+                {
+                    title: '状态',
+                    key: 'Status'
+                },
+                {
+                    title: '操作',
+                    key: 'action',
+                    width: 70,
+                    align: 'center',
+                    render: (h, params) => {
+                        return h('div', [
+                            h(
+                                'Button',
+                                {
+                                    props: {
+                                        type: 'error',
+                                        size: 'small'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.remove_port(params.row.ID,params.row.MachineName)
+                                        }
+                                    }
+                                },
+                                '删除'
+                            )
+                        ])
+                    }
+                }
+            ],
+            data: []
         }
-      ],
-      data: []
-    }
-  },
-  mounted: function() {
-    let that = this
-    axios({
-      method: 'get',
-      type: 'json',
-      url: '/api/v1/docker/ports',
-      headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      headers: { token: Cookie.get('PasswordHash') }
-    }).then(function(response) {
-      if (!!response.data.Data) {
-        that.data = response.data.Data
-        console.log(response.data.Data)
-      }
-    })
-  },
-  methods: {
-    show(index) {
-      this.$Modal.info({
-        title: 'User Info',
-        content: `Name：${this.data6[index].name}<br>Age：${this.data6[index].age}<br>Address：${this.data6[index].address}`
-      })
     },
-    remove(index) {
-      this.data6.splice(index, 1)
-    },
-    add_port(){
-      let that = this
-      axios({
-        method: 'post',
-        type: 'json',
-        url: '/api/v1/docker/addport',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        headers: { token: Cookie.get('PasswordHash') },
-        data: qs.stringify(this.formItem)
-      }).then(function(response) {
-        that.$Message.info(response.data.Msg)
-        that.modal = false
-      })
-    },
-    remove_port(id){
-      let that = this      
-      if (confirm("确认要删除？")) {
+    mounted: function() {
+        let that = this
         axios({
-          method: 'post',
-          type: 'json',
-          url: '/api/v1/docker/removeport',
-          headers: { 'content-type': 'application/x-www-form-urlencoded' },
-          headers: { token: Cookie.get('PasswordHash') },
-          data: qs.stringify({
-            id:id
-          })
+            method: 'get',
+            type: 'json',
+            url: '/api/v1/docker/ports',
+            headers: { 'content-type': 'application/x-www-form-urlencoded' },
+            headers: { token: Cookie.get('PasswordHash') }
         }).then(function(response) {
-          that.$Message.info(response.data.Msg)
+            if (!!response.data.Data) {
+                that.data = response.data.Data
+                console.log(response.data.Data)
+            }
         })
-      }
+    },
+    methods: {
+        show(index) {
+            this.$Modal.info({
+                title: 'User Info',
+                content: `Name：${this.data6[index].name}<br>Age：${this.data6[index].age}<br>Address：${this.data6[index].address}`
+            })
+        },
+        remove(index) {
+            this.data6.splice(index, 1)
+        },
+        add_port() {
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/addport',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify(this.formItem)
+            }).then(function(response) {
+                that.$Message.info(response.data.Msg)
+                that.modal = false
+            })
+        },
+        remove_port(id,machine) {
+            let that = this
+            if (confirm('确认要删除？')) {
+                axios({
+                    method: 'post',
+                    type: 'json',
+                    url: '/api/v1/docker/removeport',
+                    headers: {
+                        'content-type': 'application/x-www-form-urlencoded'
+                    },
+                    headers: { token: Cookie.get('PasswordHash') },
+                    data: qs.stringify({
+                        id: id,
+                        machine:machine
+                    })
+                }).then(function(response) {
+                    that.$Message.info(response.data.Msg)
+                })
+            }
+        }
     }
-  }
 }
 </script>
