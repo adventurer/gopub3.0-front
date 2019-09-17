@@ -113,9 +113,10 @@
               <template slot="title">
                 <Icon type="ios-cube-outline"></Icon>容器
               </template>
-              <MenuItem name="7-1" to="/docker/network">网络</MenuItem>
-              <MenuItem name="7-2" to="/docker">容器列表</MenuItem>
-              <MenuItem name="7-3" to="/docker/port">端口转发</MenuItem>
+              <MenuItem name="7-1" to="/docker/dockerfile">Dockerfile</MenuItem>
+              <MenuItem name="7-2" to="/docker/network">网络</MenuItem>
+              <MenuItem name="7-3" to="/docker">容器列表</MenuItem>
+              <MenuItem name="7-4" to="/docker/port">端口转发</MenuItem>
             </Submenu>
             <Submenu name="8">
               <template slot="title">

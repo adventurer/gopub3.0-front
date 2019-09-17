@@ -1,13 +1,19 @@
 <template>
   <div>
-    <Select
-      @on-change="get_network"
-      v-model="model1"
-      style="width:200px;margin-bottom:5px;"
-      placeholder="选择主机"
-    >
-      <Option v-for="item in machines" :value="item.ID" :key="item.Ip">{{ item.Name }}</Option>
-    </Select>
+    <Row>
+      <Col span="24">
+        <Select
+          @on-change="get_network"
+          v-model="model1"
+          style="width:200px;margin-bottom:5px;"
+          placeholder="选择主机"
+        >
+          <Option v-for="item in machines" :value="item.ID" :key="item.Ip">{{ item.Name }}</Option>
+        </Select>
+
+        <Button style="float:right;" type="info" icon="md-add" @click="modal_new = true">创建网络</Button>
+      </Col>
+    </Row>
 
     <Table border :columns="columns" :data="data"></Table>
 
@@ -38,9 +44,28 @@
     </Modal>
 
     <Alert style="margin-top:10px;">
-        创建网络示例：
-        <template slot="desc">docker  network  create  -d  bridge  --subnet  172.19.0.0/24 wnetwork</template>
+      创建网络示例：
+      <template slot="desc">docker network create -d bridge --subnet 172.19.0.0/24 wnetwork</template>
     </Alert>
+
+    <Modal v-model="modal_new" width="360">
+      <p slot="header" style="text-align:center">
+        <span>创建网络</span>
+      </p>
+      <div style="text-align:center">
+        <div>
+          <lable style="width: 80px;">网络名称：</lable>
+          <Input v-model="formNetrowk.Name" placeholder="英文命名" style="width: 250px" />
+        </div>
+        <div style="margin-top:5px;">
+          <lable style="width: 80px;">网段地址：</lable>
+          <Input v-model="formNetrowk.SubNet" placeholder="172.19.0.0/24" style="width: 250px" />
+        </div>
+      </div>
+      <div slot="footer">
+        <Button type="info" size="large" long @click="submit_new_network">提交</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 <script>
@@ -51,7 +76,13 @@ const Cookie = process.client ? require('js-cookie') : undefined
 export default {
     data() {
         return {
+            modal_new: false,
             modal2: false,
+            formNetrowk:{
+                Name:"",
+                SubNet:"",
+                Machine: "",
+            },
             formItem: {
                 Machine: this.model1,
                 Name: '',
@@ -215,6 +246,22 @@ export default {
                 },
                 headers: { token: Cookie.get('PasswordHash') },
                 data: qs.stringify(this.formItem)
+            }).then(function(response) {
+                that.$Message.info(response.data.Msg)
+            })
+        },
+        submit_new_network(){
+            this.formNetrowk.Machine = this.model1
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/network/new',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify(this.formNetrowk)
             }).then(function(response) {
                 that.$Message.info(response.data.Msg)
             })

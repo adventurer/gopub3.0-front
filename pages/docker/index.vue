@@ -114,6 +114,24 @@ export default {
                                     }
                                 },
                                 '停止'
+                            ),
+                            h(
+                                'Button',
+                                {
+                                    props: {
+                                        type: 'error',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.stop_container(params.row)
+                                        }
+                                    }
+                                },
+                                '删除'
                             )
                         ])
                     }
