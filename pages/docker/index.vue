@@ -10,8 +10,6 @@
     </Select>
 
     <Table border :columns="columns" :data="data"></Table>
-    
-    
   </div>
 </template>
 <script>
@@ -127,7 +125,7 @@ export default {
                                     },
                                     on: {
                                         click: () => {
-                                            this.stop_container(params.row)
+                                            this.remove_container(params.row)
                                         }
                                     }
                                 },
@@ -139,7 +137,8 @@ export default {
             ],
             data: [],
             machines: [],
-            model1: []
+            model1: [],
+            images: []
         }
     },
     mounted: function() {
@@ -225,6 +224,30 @@ export default {
                     that.data = []
                 }
             })
+        },
+        remove_container(row) {
+            if (row.Status=="running") {
+                this.$Message.info("不能删除处于运行状态的容器")
+                return
+            }
+            if (confirm('确认删除容器' + row.Name)) {
+                let that = this
+                axios({
+                    method: 'post',
+                    type: 'json',
+                    url: '/api/v1/docker/remove',
+                    headers: {
+                        'content-type': 'application/x-www-form-urlencoded'
+                    },
+                    headers: { token: Cookie.get('PasswordHash') },
+                    data: qs.stringify({
+                        id: this.model1,
+                        name: row.ID
+                    })
+                }).then(function(response) {
+                    that.$Message.info(response.data.Msg)
+                })
+            }
         }
     }
 }

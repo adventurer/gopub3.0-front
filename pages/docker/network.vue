@@ -34,7 +34,10 @@
             <Input v-model="formItem.Ip" placeholder="容器ip"></Input>
           </FormItem>
           <FormItem label="镜像">
-            <Input v-model="formItem.Image" placeholder="容器镜像"></Input>
+            <!-- <Input v-model="formItem.Image" placeholder="容器镜像"></Input> -->
+            <Select v-model="formItem.Image">
+              <Option v-for="item in images" :value="item.Image" :key="item.Image">{{ item.Image }}</Option>
+            </Select>
           </FormItem>
         </Form>
       </div>
@@ -43,22 +46,17 @@
       </div>
     </Modal>
 
-    <Alert style="margin-top:10px;">
-      创建网络示例：
-      <template slot="desc">docker network create -d bridge --subnet 172.19.0.0/24 wnetwork</template>
-    </Alert>
-
     <Modal v-model="modal_new" width="360">
       <p slot="header" style="text-align:center">
         <span>创建网络</span>
       </p>
       <div style="text-align:center">
         <div>
-          <lable style="width: 80px;">网络名称：</lable>
+          <div style="width: 80px;">网络名称：</div>
           <Input v-model="formNetrowk.Name" placeholder="英文命名" style="width: 250px" />
         </div>
         <div style="margin-top:5px;">
-          <lable style="width: 80px;">网段地址：</lable>
+          <div style="width: 80px;">网段地址：</div>
           <Input v-model="formNetrowk.SubNet" placeholder="172.19.0.0/24" style="width: 250px" />
         </div>
       </div>
@@ -78,10 +76,10 @@ export default {
         return {
             modal_new: false,
             modal2: false,
-            formNetrowk:{
-                Name:"",
-                SubNet:"",
-                Machine: "",
+            formNetrowk: {
+                Name: '',
+                SubNet: '',
+                Machine: ''
             },
             formItem: {
                 Machine: this.model1,
@@ -173,7 +171,9 @@ export default {
                                     },
                                     on: {
                                         click: () => {
-                                            this.remove(params.index)
+                                            this.docker_network_remove(
+                                                params.row.Name
+                                            )
                                         }
                                     }
                                 },
@@ -185,7 +185,8 @@ export default {
             ],
             data: [],
             machines: [],
-            model1: []
+            model1: [],
+            images: []
         }
     },
     mounted: function() {
@@ -229,6 +230,8 @@ export default {
                 that.formItem.Machine = that.model1
                 that.$Message.info(response.data.Msg)
                 that.data = response.data.Data
+
+                that.docker_images(that.model1)
             })
         },
         container_new(row) {
@@ -250,7 +253,7 @@ export default {
                 that.$Message.info(response.data.Msg)
             })
         },
-        submit_new_network(){
+        submit_new_network() {
             this.formNetrowk.Machine = this.model1
             let that = this
             axios({
@@ -265,6 +268,43 @@ export default {
             }).then(function(response) {
                 that.$Message.info(response.data.Msg)
             })
+        },
+        docker_images(id) {
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/images',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify({
+                    id: id
+                })
+            }).then(function(response) {
+                that.images = response.data.Data
+            })
+        },
+        docker_network_remove(name) {
+            if (confirm('确认要删除这个网络？')) {
+                let that = this
+                axios({
+                    method: 'post',
+                    type: 'json',
+                    url: '/api/v1/docker/networkremove',
+                    headers: {
+                        'content-type': 'application/x-www-form-urlencoded'
+                    },
+                    headers: { token: Cookie.get('PasswordHash') },
+                    data: qs.stringify({
+                        id: this.model1,
+                        name: name
+                    })
+                }).then(function(response) {
+                    that.$Message.info(response.data.Msg)
+                })
+            }
         }
     }
 }
