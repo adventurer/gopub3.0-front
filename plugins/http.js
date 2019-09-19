@@ -6,7 +6,7 @@ const Cookie = process.client ? require('js-cookie') : undefined
 export default function({ app }) {
   // axios 配置
   axios.defaults.timeout = 5000
-  axios.defaults.baseURL = 'http://127.0.0.1:8088/'
+  axios.defaults.baseURL = process.env.apiUrl
   // http request 拦截器
   axios.interceptors.request.use(
     response => {
