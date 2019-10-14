@@ -1,24 +1,24 @@
 <style scoped>
 .layout {
-  border: 1px solid #d7dde4;
-  background: #f5f7f9;
-  position: relative;
-  border-radius: 4px;
-  overflow: hidden;
+    border: 1px solid #d7dde4;
+    background: #f5f7f9;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
 }
 .layout-logo {
-  width: 100px;
-  height: 30px;
-  background: #5b6270;
-  border-radius: 3px;
-  float: left;
-  position: relative;
-  top: 15px;
-  left: 20px;
+    width: 100px;
+    height: 30px;
+    background: #5b6270;
+    border-radius: 3px;
+    float: left;
+    position: relative;
+    top: 15px;
+    left: 20px;
 }
 .layout-nav {
-  float: right;
-  color: #fff;
+    float: right;
+    color: #fff;
 }
 </style>
 <template>
@@ -117,6 +117,7 @@
               <MenuItem name="7-2" to="/docker/network">网络</MenuItem>
               <MenuItem name="7-3" to="/docker">容器列表</MenuItem>
               <MenuItem name="7-4" to="/docker/port">端口转发</MenuItem>
+              <MenuItem name="7-5" to="/docker/volume">卷</MenuItem>
             </Submenu>
             <Submenu name="8">
               <template slot="title">
@@ -153,74 +154,92 @@
         <Button type="primary" size="large" long @click="newpass_submit">提交</Button>
       </div>
     </Modal>
+
+    <div id="terminal-container"></div>
   </div>
 </template>
 <script>
+// import { Terminal } from 'xterm';
+// import { FitAddon } from 'xterm-addon-fit';
+
 import { log } from 'util'
 import axios from 'axios'
 import qs from 'qs'
 const Cookie = process.client ? require('js-cookie') : undefined
 
 export default {
-  data() {
-    return {
-      newpass: '',
-      modal_pass: false,
-      menuHeight: 100,
-      active: '1-1',
-      open_t: ['2'],
-      userName: ''
+    data() {
+        return {
+            newpass: '',
+            modal_pass: false,
+            menuHeight: 100,
+            active: '1-1',
+            open_t: ['2'],
+            userName: ''
+        }
+    },
+    computed: {
+        open: {
+            get() {
+                return this.open_t
+            },
+            set() {}
+        }
+    },
+    beforeMount: function() {
+        this.menuHeight = document.documentElement.clientHeight - 60
+        this.active = Cookie.get('active-item')
+        this.open_t = [Cookie.get('open-item')]
+        this.userName = Cookie.get('Email')
+    },
+    mounted: function() {
+        // const term = new Terminal();
+        // const fitAddon = new FitAddon();
+        // term.loadAddon(fitAddon);
+
+        // // Open the terminal in #terminal-container
+        // term.open(document.getElementById('terminal-container'));
+
+        // // Make the terminal's size and geometry fit the size of #terminal-container
+        // fitAddon.fit();
+    },
+    methods: {
+        active_item: function(name) {
+            Cookie.set('active-item', name)
+        },
+        open_item: function(name) {
+            Cookie.set('open-item', name[0])
+        },
+        change_pass() {
+            this.modal_pass = true
+        },
+        newpass_submit() {
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/user/repass',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify({
+                    pass: this.newpass
+                })
+            }).then(function(response) {
+                // console.log(that)
+                // console.log(response)
+                that.modal_pass = false
+                that.$Message.info('修改成功')
+            })
+        },
+        log_out() {
+            Cookie.remove('PasswordHash')
+            Cookie.remove('isLogin')
+            Cookie.remove('Email')
+            Cookie.remove('Role')
+            location.href = '/'
+        }
     }
-  },
-  computed: {
-    open: {
-      get() {
-        return this.open_t
-      },
-      set() {}
-    }
-  },
-  beforeMount: function() {
-    this.menuHeight = document.documentElement.clientHeight - 60
-    this.active = Cookie.get('active-item')
-    this.open_t = [Cookie.get('open-item')]
-    this.userName = Cookie.get('Email')
-  },
-  methods: {
-    active_item: function(name) {
-      Cookie.set('active-item', name)
-    },
-    open_item: function(name) {
-      Cookie.set('open-item', name[0])
-    },
-    change_pass() {
-      this.modal_pass = true
-    },
-    newpass_submit() {
-      let that = this
-      axios({
-        method: 'post',
-        type: 'json',
-        url: '/api/v1/user/repass',
-        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-        headers: { token: Cookie.get('PasswordHash') },
-        data: qs.stringify({
-          pass: this.newpass
-        })
-      }).then(function(response) {
-        // console.log(that)
-        // console.log(response)
-        that.modal_pass = false
-        that.$Message.info('修改成功')
-      })
-    },
-    log_out() {
-      Cookie.remove('PasswordHash')
-      Cookie.remove('isLogin')
-      Cookie.remove('Email')
-      Cookie.remove('Role')
-      location.href = '/'
-    }
-  }
 }
 </script>

@@ -1,4 +1,4 @@
-import iView from 'iview'
+import iView from 'view-design'
 import axios from 'axios'
 const Cookie = process.client ? require('js-cookie') : undefined
 

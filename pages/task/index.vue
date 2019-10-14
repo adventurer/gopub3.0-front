@@ -1,6 +1,6 @@
 <template>
   <div>
-    <Table :columns="columns" :data="data"></Table>
+    <Table border :columns="columns" :data="data"></Table>
     <Modal v-model="audit_modal" width="360">
       <p slot="header" style="color:#f60;text-align:center">
         <Icon type="ios-information-circle"></Icon>

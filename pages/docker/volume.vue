@@ -3,7 +3,7 @@
     <Row>
       <Col span="24">
         <Select
-          @on-change="get_network"
+          @on-change="get_volumes"
           v-model="model1"
           style="width:200px;margin-bottom:5px;"
           placeholder="选择主机"
@@ -11,7 +11,7 @@
           <Option v-for="item in machines" :value="item.ID" :key="item.Ip">{{ item.Name }}</Option>
         </Select>
 
-        <Button style="float:right;" type="info" icon="md-add" @click="modal_new = true">创建网络</Button>
+        <Button style="float:right;" type="info" icon="md-add" @click="modal_new = true">创建nfs卷</Button>
       </Col>
     </Row>
 
@@ -34,16 +34,11 @@
             <Input v-model="formItem.Ip" placeholder="容器ip"></Input>
           </FormItem>
           <FormItem label="端口绑定">
-            <Input style="width: auto" v-model="formItem.Hport" placeholder="主机端口"></Input>
-            -
+            <Input style="width: auto" v-model="formItem.Hport" placeholder="主机端口"></Input>-
             <Input style="width: auto" v-model="formItem.Cport" placeholder="容器端口"></Input>
           </FormItem>
-          <FormItem label="卷挂载">
-            <Input style="width: auto" v-model="formItem.Hvolume" placeholder="主机卷"></Input>
-            -
-            <Input style="width: auto" v-model="formItem.Cvolume" placeholder="容器卷"></Input>
-          </FormItem>
           <FormItem label="镜像">
+            <!-- <Input v-model="formItem.Image" placeholder="容器镜像"></Input> -->
             <Select v-model="formItem.Image">
               <Option v-for="item in images" :value="item.Image" :key="item.Image">{{ item.Image }}</Option>
             </Select>
@@ -57,20 +52,24 @@
 
     <Modal v-model="modal_new" width="360">
       <p slot="header" style="text-align:center">
-        <span>创建网络</span>
+        <span>创建nfs卷</span>
       </p>
-      <div style="text-align:center">
+      <div>
         <div>
-          <div style="width: 80px;">网络名称：</div>
-          <Input v-model="formNetrowk.Name" placeholder="英文命名" style="width: 250px" />
+          nfs服务器ip：
+          <Input v-model="formVolume.Ip" placeholder="nfs服务器ip" style="width: 100%" />
         </div>
         <div style="margin-top:5px;">
-          <div style="width: 80px;">网段地址：</div>
-          <Input v-model="formNetrowk.SubNet" placeholder="172.19.0.0/24" style="width: 250px" />
+          nfs服务器路径：
+          <Input v-model="formVolume.Directory" placeholder="nfs服务目录（带根目录）" style="width: 100%" />
+        </div>
+        <div style="margin-top:5px;">
+          挂载名：
+          <Input v-model="formVolume.Name" placeholder="挂载后的卷名" style="width: 100%" />
         </div>
       </div>
       <div slot="footer">
-        <Button type="info" size="large" long @click="submit_new_network">提交</Button>
+        <Button type="info" size="large" long @click="submit_new_volume">提交</Button>
       </div>
     </Modal>
   </div>
@@ -85,9 +84,10 @@ export default {
         return {
             modal_new: false,
             modal2: false,
-            formNetrowk: {
+            formVolume: {
+                Ip: '',
                 Name: '',
-                SubNet: '',
+                Directory: '',
                 Machine: ''
             },
             formItem: {
@@ -96,15 +96,13 @@ export default {
                 Network: '',
                 Ip: '',
                 Image: '',
-                Hport:'',
-                Cport:'',
-                Hvolume:'',
-                Cvolume:'',
+                Hport: '',
+                Cport: ''
             },
             columns: [
                 {
-                    title: 'ID',
-                    key: 'ID',
+                    title: 'Driver',
+                    key: 'Driver',
                     render: (h, params) => {
                         return h('div', [
                             h('Icon', {
@@ -112,25 +110,13 @@ export default {
                                     type: 'person'
                                 }
                             }),
-                            h('strong', params.row.ID)
+                            h('strong', params.row.Driver)
                         ])
                     }
                 },
                 {
                     title: 'NAME',
                     key: 'Name'
-                },
-                {
-                    title: 'NETWORK',
-                    key: 'IP'
-                },
-                {
-                    title: 'DRIVER',
-                    key: 'Driver'
-                },
-                {
-                    title: 'SCOPE',
-                    key: 'Scope'
                 },
                 {
                     title: '操作',
@@ -151,11 +137,11 @@ export default {
                                     },
                                     on: {
                                         click: () => {
-                                            this.container_new(params.row)
+                                            this.volumeInspect(params.row)
                                         }
                                     }
                                 },
-                                '创建容器'
+                                '详情'
                             ),
                             h(
                                 'Button',
@@ -166,9 +152,7 @@ export default {
                                     },
                                     on: {
                                         click: () => {
-                                            this.docker_network_remove(
-                                                params.row.Name
-                                            )
+                                            this.volumeRemove(params.row)
                                         }
                                     }
                                 },
@@ -208,12 +192,12 @@ export default {
         remove(index) {
             this.data6.splice(index, 1)
         },
-        get_network() {
+        get_volumes() {
             let that = this
             axios({
                 method: 'post',
                 type: 'json',
-                url: '/api/v1/docker/networks',
+                url: '/api/v1/docker/volumes',
                 headers: {
                     'content-type': 'application/x-www-form-urlencoded'
                 },
@@ -222,84 +206,67 @@ export default {
                     id: this.model1
                 })
             }).then(function(response) {
-                that.formItem.Machine = that.model1
                 that.$Message.info(response.data.Msg)
                 that.data = response.data.Data
-
-                that.docker_images(that.model1)
             })
         },
-        container_new(row) {
-            this.modal2 = true
-            this.formItem.Network = row.Name
-        },
-        container_deploy() {
+        volumeInspect(row) {
             let that = this
             axios({
                 method: 'post',
                 type: 'json',
-                url: '/api/v1/docker/container/deploy',
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
-                },
-                headers: { token: Cookie.get('PasswordHash') },
-                data: qs.stringify(this.formItem)
-            }).then(function(response) {
-                that.$Message.info(response.data.Msg)
-            })
-        },
-        submit_new_network() {
-            this.formNetrowk.Machine = this.model1
-            let that = this
-            axios({
-                method: 'post',
-                type: 'json',
-                url: '/api/v1/docker/network/new',
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
-                },
-                headers: { token: Cookie.get('PasswordHash') },
-                data: qs.stringify(this.formNetrowk)
-            }).then(function(response) {
-                that.$Message.info(response.data.Msg)
-            })
-        },
-        docker_images(id) {
-            let that = this
-            axios({
-                method: 'post',
-                type: 'json',
-                url: '/api/v1/docker/images',
+                url: '/api/v1/docker/volumeinspect',
                 headers: {
                     'content-type': 'application/x-www-form-urlencoded'
                 },
                 headers: { token: Cookie.get('PasswordHash') },
                 data: qs.stringify({
-                    id: id
+                    id: this.model1,
+                    volume: row.Name
                 })
             }).then(function(response) {
-                that.images = response.data.Data
+                that.$Message.info(response.data.Msg)
+                that.$Modal.confirm({
+                    title: row.Name + ' :inspect',
+                    content: '<div>' + response.data.Data + '</div>'
+                })
             })
         },
-        docker_network_remove(name) {
-            if (confirm('确认要删除这个网络？')) {
+        volumeRemove(row) {
+            if (confirm('要删除这个卷？')) {
                 let that = this
                 axios({
                     method: 'post',
                     type: 'json',
-                    url: '/api/v1/docker/networkremove',
+                    url: '/api/v1/docker/volumeremove',
                     headers: {
                         'content-type': 'application/x-www-form-urlencoded'
                     },
                     headers: { token: Cookie.get('PasswordHash') },
                     data: qs.stringify({
                         id: this.model1,
-                        name: name
+                        volume: row.Name
                     })
                 }).then(function(response) {
                     that.$Message.info(response.data.Msg)
                 })
             }
+        },
+        submit_new_volume() {
+            this.formVolume.Machine = this.model1
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/volumecreate',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify(this.formVolume)
+            }).then(function(response) {
+                that.$Message.info(response.data.Msg)
+            })
         }
     }
 }

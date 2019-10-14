@@ -2,7 +2,7 @@
   <div>
     <Row>
       <Col span="24">
-        <Upload v-bind:headers="{token}" action="http://192.168.1.206:8088/api/v1/docker/fileup">
+        <Upload v-bind:headers="{token}" action="http://127.0.0.1:8088/api/v1/docker/fileup">
           <Button icon="ios-cloud-upload-outline">上传Dockfile</Button>
         </Upload>
       </Col>

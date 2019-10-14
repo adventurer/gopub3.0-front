@@ -70,7 +70,9 @@ export default {
                                     },
                                     on: {
                                         click: () => {
-                                            this.show(params.index)
+                                            this.docker_container_detail(
+                                                params.row
+                                            )
                                         }
                                     }
                                 },
@@ -226,8 +228,8 @@ export default {
             })
         },
         remove_container(row) {
-            if (row.Status=="running") {
-                this.$Message.info("不能删除处于运行状态的容器")
+            if (row.Status == 'running') {
+                this.$Message.info('不能删除处于运行状态的容器')
                 return
             }
             if (confirm('确认删除容器' + row.Name)) {
@@ -248,6 +250,29 @@ export default {
                     that.$Message.info(response.data.Msg)
                 })
             }
+        },
+        docker_container_detail(row) {
+            let that = this
+            axios({
+                method: 'post',
+                type: 'json',
+                url: '/api/v1/docker/container/detail',
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                },
+                headers: { token: Cookie.get('PasswordHash') },
+                data: qs.stringify({
+                    id: this.model1,
+                    name: row.ID
+                })
+            }).then(function(response) {
+                let config = {
+                    'title':'详情',
+                    'content':response.data.Data,
+                    'width':800,
+                }
+                that.$Modal.info(config)
+            })
         }
     }
 }
